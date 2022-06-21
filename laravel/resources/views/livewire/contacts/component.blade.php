@@ -3,18 +3,6 @@
 
     <div class="row">
         <div class="col-md-6">
-            @if (count($errors) > 0)
-            <div class="alert alert-danger">
-                <a href="#" class="close" data-dismiss="alert">×</a>
-                <strong>Sorry!</strong> invalid input.<br><br>
-                <ul style="list-style-type:none;">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-            @endif
-
             @if($updateMode)
                 @include('livewire.contacts.update')
             @else
@@ -23,10 +11,6 @@
         </div>
         <div class="col-md-6">
             <input wire:model.searchTerm="searchTerm" type="text" placeholder="Search todos..."/>
-
-            <div class="container">
-                <input wire:model.lazy="post" type="text" placeholder="Change..."/>
-            </div>
         </div>
     </div>
     <div class="row" style="margin-top: 20px">
@@ -48,7 +32,7 @@
                         <button wire:click="edit({{ $row->id }})" class="btn btn-xs btn-primary">Edit</button>
                         <button
                             onclick="confirm('Are you sure?') || event.stopImmediatePropagation()"
-                            wire:click="destroy({{ $row->id }})"
+                            wire:click.lazy="destroy({{ $row->id }})"
                             class="btn btn-xs btn-danger"
                         >
                             Delete
@@ -61,8 +45,24 @@
 </div>
 
 <script>
-    document.addEventListener('livewire:load', () => {
-        Livewire.onPageExpired((response, message) => {})
-        console.log(123)
-    })
+    document.addEventListener("DOMContentLoaded", function () {
+        window.livewire.hook('message.processed', (message, component) => {
+            $('#btn_save_todo').click(function () {
+                if (component.fingerprint.name=='contact-component' && Object.entries(message.response.serverMemo.errors).length > 0) {
+                    var obj = message.response.serverMemo.errors;
+                    for (var key in obj) {
+                        Swal.fire({
+                            title: 'Error',
+                            html:`
+                                <div>${obj['name'] ? obj['name'] : ''}</div>
+                                <div>${obj['phone'] ? obj['phone'] : ''}</div>
+                                <div>${obj['address'] ? obj['address'] : ''}</div>
+                            `,
+                            icon: 'warning',
+                        })
+                    }
+                }
+            })
+        })
+    });
 </script>

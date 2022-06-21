@@ -19,6 +19,7 @@
             </div>
             <div class="col-md-8">
                 Trang chu
+                <hr/>
                 @yield('content')
             </div>
         </div>
